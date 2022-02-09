@@ -23,9 +23,9 @@ class Trainer():
         in_vec = self.model.form.to_list(in_sent)
         out_vec = self.model.form.to_list(out_sent)
         for i in range(len(out_vec)):
-            test = torch.Tensor(in_vec + out_vec[:i]).type(torch.LongTensor)
+            test = torch.stack(in_vec + out_vec[:i]).type(torch.FloatTensor).to(device)
             out = self.model.forward(test)
-            loss = F.cross_entropy(out, out_vec[i])
+            loss = F.mse_loss(out, out_vec[i].type(torch.FloatTensor))
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
