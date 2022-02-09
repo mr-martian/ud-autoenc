@@ -36,6 +36,17 @@ class Tree:
                     continue
                 t.words.append(Word.from_conll(ln.strip()))
         return t
+    def update_index(self):
+        upd = {}
+        for i, w in enumerate(self.words, 1):
+            upd[w.wid] = i
+        for w in self.words:
+            w.wid = upd[w.wid]
+            w.head = upd.get(w.head, 0)
+    def children(self, wid):
+        for w in self.words:
+            if w.head == wid:
+                yield w
 
 def iter_conll(fname):
     with open(fname) as fin:
