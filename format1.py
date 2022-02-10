@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from format_base import *
+from conll_tree import Word
 
 def one_hot(opts, val, unk=-1):
     ret = [0]*len(opts)
@@ -32,6 +33,8 @@ class Format1(FormatBase):
         arr = [0] * self.dim
         arr[0] = 1
         return torch.Tensor(arr).type(torch.LongTensor)
+    def is_eos(self, vec):
+        return vec[0] > 0.5
     def word_to_vec(self, w):
         arr = [0]
         if w.head == 0:
@@ -50,3 +53,24 @@ class Format1(FormatBase):
         arr += feat
         arr += one_hot(self.rel, w.rel, 0)
         return torch.Tensor(arr).type(torch.LongTensor)
+    def add_word(self, vec, tree):
+        w = Word()
+        w.wid = len(tree.words) + 1
+        hd = round(vec[2].item())
+        if vec[1] > 0.5:
+            hd *= -1
+        if hd == 0:
+            w.head = 0
+        else:
+            w.head = w.wid + hd
+        i = 3
+        w.lemma = self.lemma[vec[i:len(self.lemma)+i].argmax().item()]
+        i += len(self.lemma)
+        w.upos = self.pos[vec[i:i+len(self.pos)].argmax().item()]
+        i += len(self.pos)
+        for j in range(i, i + len(self.feat)):
+            if vec[j] > 0.5:
+                w.feats.append(self.feat[j-i])
+        i += len(self.feat)
+        w.rel = self.rel[vec[i:i+len(self.rel)].argmax().item()]
+        tree.words.append(w)
