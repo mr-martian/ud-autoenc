@@ -21,6 +21,7 @@ def corrupt(tree, cor_list, cor_count=1):
     for i in range(cor_count):
         k = random.choice(keys)
         ALL_CORRUPTERS[k](ret)
+        ret.update_index()
     return ret
 
 def corrupter(func):
@@ -36,5 +37,3 @@ def delfn(tree):
             dl.append(i)
     for idx in reversed(dl):
         del tree.words[idx]
-    tree.update_index()
-    return tree
